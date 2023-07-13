@@ -19,7 +19,9 @@ class RabbitMQWorker:
         return self
 
     async def listen(self, queue_name: str, worker_function: Callable[[dict], Awaitable[dict]]):
+        await self.setup()
         queue = await self.channel.declare_queue(queue_name)
+        print(f"[x] Listening for {queue_name}")
         async with queue.iterator() as qi:
             message: aio_pika.abc.AbstractMessage
             async for message in qi:
