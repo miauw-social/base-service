@@ -2,7 +2,7 @@
 name = "base_service"
 description = "base service and base worker class for miauw"
 authors = [{name = "cheetahbyte", email = "contact@cheetahbyte.dev"}]
-version = "0.1.0"
+version = "0.2.0"
 requires-python = ">=3.11"
 dependencies = [
     "aio-pika"
