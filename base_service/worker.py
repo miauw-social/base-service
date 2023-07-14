@@ -3,8 +3,10 @@ import aio_pika
 import json
 import asyncio
 
+
 class RabbitMQWorker:
     """RabbitMQ Base Worker Class"""
+
     def __init__(self, url: str):
         self.connection = None
         self.url: str = url
@@ -18,7 +20,13 @@ class RabbitMQWorker:
         self.ex = self.channel.default_exchange
         return self
 
-    async def listen(self, queue_name: str, worker_function: Callable[[dict], Awaitable[dict]]):
+    async def send_basic(self, queue_name: str, data: bytes) -> None:
+        """sends something to queue"""
+        await self.ex.publish(aio_pika.Message(data), routing_key=queue_name)
+
+    async def listen(
+        self, queue_name: str, worker_function: Callable[[dict], Awaitable[dict]]
+    ):
         await self.setup()
         queue = await self.channel.declare_queue(queue_name)
         async with queue.iterator() as qi:
@@ -31,12 +39,10 @@ class RabbitMQWorker:
                         res = await worker_function(data)
                         await self.ex.publish(
                             aio_pika.Message(
-                                body = json.dumps(res).encode("utf-8"),
-                                correlation_id=message.correlation_id
+                                body=json.dumps(res).encode("utf-8"),
+                                correlation_id=message.correlation_id,
                             ),
-                            routing_key=message.reply_to
+                            routing_key=message.reply_to,
                         )
                 except Exception as e:
                     print("[!] Exception: ", e)
-
-
