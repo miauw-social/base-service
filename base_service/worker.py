@@ -25,7 +25,7 @@ class RabbitMQWorker:
         await self.ex.publish(aio_pika.Message(data), routing_key=queue_name)
 
     async def listen(
-        self, queue_name: str, worker_function: Callable[[dict], Awaitable[dict]]
+        self, queue_name: str, worker_function: Callable[[Any], Awaitable[Any]]
     ):
         await self.setup()
         queue = await self.channel.declare_queue(queue_name)
@@ -35,7 +35,10 @@ class RabbitMQWorker:
                 try:
                     async with message.process(requeue=False):
                         assert message.reply_to is not None
-                        data: dict = json.loads(message.body)
+                        if type(data) is dict:
+                            data = json.loads(message.body)
+                        else:
+                            data = str(data)
                         res = await worker_function(data)
                         await self.ex.publish(
                             aio_pika.Message(
