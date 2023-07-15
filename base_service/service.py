@@ -4,7 +4,7 @@ import asyncio
 import typing
 import logging
 
-class Service:
+class BaseService:
     """creates the base service class"""
     def __init__(self, name: str, url: str, logfile: str = None, worker_log: bool = True):
         self.worker = RabbitMQWorker(url)
@@ -38,3 +38,10 @@ class Service:
         self.logger.debug(f"add handler {handler} for event '{event}'")
         self.events.append(event)
         self.m[event] = handler
+
+
+    def event(self, event: str):
+        """adds a new event handler for event"""
+        def wrapper(handler: typing.Callable[[dict], typing.Awaitable[dict]]):
+            self.add_event_handler(event, handler)
+        return wrapper
