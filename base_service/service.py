@@ -9,10 +9,10 @@ class BaseService:
     def __init__(self, name: str, url: str, logfile: str = None, worker_log: bool = True):
         self.worker = RabbitMQWorker(url)
         self.events: list[str] = []
-        self.m: dict[str, typing.Callable[[dict], typing.Awaitable[dict]]] = defaultdict()
+        self.m: dict[str, typing.Callable[[typing.Any], typing.Awaitable[typing.Any]]] = defaultdict()
         self.name = name
+        # logging
         self.logger = logging.getLogger(name)
-        # self.log_formatter = logging.Formatter("[%(asctime)s] - %(name)s - %(levelname)s - %(message)s")
         self.log_formatter = logging.Formatter("[%(asctime)s] - %(name)s - %(message)s")
         self.log_filehandler = logging.FileHandler(logfile or "service.log")
         self.log_streamhandler = logging.StreamHandler()
@@ -33,7 +33,7 @@ class BaseService:
         loop.run_until_complete(asyncio.gather(*[self.worker.listen(k,v) for k,v in self.m.items()]))
 
 
-    def add_event_handler(self, event: str, handler: typing.Callable[[dict], typing.Awaitable[dict]]) -> None:
+    def add_event_handler(self, event: str, handler: typing.Callable[[typing.Any], typing.Awaitable[typing.Any]]) -> None:
         """adds a new event handler for service"""
         self.logger.debug(f"add handler {handler} for event '{event}'")
         self.events.append(event)
