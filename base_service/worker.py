@@ -36,7 +36,7 @@ class RabbitMQWorker:
                 try:
                     async with message.process(requeue=False):
                         assert message.reply_to is not None
-                        if type(data) is dict:
+                        if type(message.body) is dict:
                             data = json.loads(message.body)
                         else:
                             data = str(data)
