@@ -19,7 +19,7 @@ class BaseService:
         self.events: list[str] = []
         self.m: dict[
             str, typing.Callable[[typing.Any], typing.Awaitable[typing.Any]]
-        ] = defaultdict()
+        ] = defaultdict(rpc={}, basic={})
         self.name = name
         # logging
         self.logger = logging.getLogger(name)
@@ -41,15 +41,14 @@ class BaseService:
         for ev in self.events:
             self.logger.info(f"listening for event '{ev}'")
         loop.run_until_complete(
-            asyncio.gather(*[self.worker.listen(k, v) for k, v in self.m.items()])
+            asyncio.gather(*[self.worker.listen(event, handler) for a in self.m.values() for event, handler in a.items()])
         )
 
-    def event(self, event: str):
+    def event(self, event: str, event_type: str = "rpc"):
         """adds a new event handler for event"""
 
         def wrapper(handler: typing.Callable[[dict], typing.Awaitable[dict]]):
             self.logger.debug(f"add handler {handler} for event '{event}'")
             self.events.append(event)
-            self.m[event] = handler
-
+            self.m[event_type][event] = handler
         return wrapper
