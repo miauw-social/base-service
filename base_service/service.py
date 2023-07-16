@@ -1,4 +1,5 @@
-from base_service import RabbitMQWorker
+from base_service.email_worker import EmailTemplates, EMailWorker
+from base_service.worker import RabbitMQWorker
 from collections import defaultdict
 import asyncio
 import typing
@@ -12,6 +13,7 @@ class BaseService:
         self, name: str, url: str, logfile: str = None, worker_log: bool = True
     ):
         self.worker = RabbitMQWorker(url)
+        self.emailer = EMailWorker(url)
         self.events: list[str] = []
         self.m: dict[
             str, typing.Callable[[typing.Any], typing.Awaitable[typing.Any]]
