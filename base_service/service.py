@@ -4,12 +4,18 @@ import asyncio
 import typing
 import logging
 
+
 class BaseService:
     """creates the base service class"""
-    def __init__(self, name: str, url: str, logfile: str = None, worker_log: bool = True):
+
+    def __init__(
+        self, name: str, url: str, logfile: str = None, worker_log: bool = True
+    ):
         self.worker = RabbitMQWorker(url)
         self.events: list[str] = []
-        self.m: dict[str, typing.Callable[[typing.Any], typing.Awaitable[typing.Any]]] = defaultdict()
+        self.m: dict[
+            str, typing.Callable[[typing.Any], typing.Awaitable[typing.Any]]
+        ] = defaultdict()
         self.name = name
         # logging
         self.logger = logging.getLogger(name)
@@ -30,18 +36,16 @@ class BaseService:
         loop = asyncio.get_event_loop()
         for ev in self.events:
             self.logger.info(f"listening for event '{ev}'")
-        loop.run_until_complete(asyncio.gather(*[self.worker.listen(k,v) for k,v in self.m.items()]))
-
-
-    def add_event_handler(self, event: str, handler: typing.Callable[[typing.Any], typing.Awaitable[typing.Any]]) -> None:
-        """adds a new event handler for service"""
-        self.logger.debug(f"add handler {handler} for event '{event}'")
-        self.events.append(event)
-        self.m[event] = handler
-
+        loop.run_until_complete(
+            asyncio.gather(*[self.worker.listen(k, v) for k, v in self.m.items()])
+        )
 
     def event(self, event: str):
         """adds a new event handler for event"""
+
         def wrapper(handler: typing.Callable[[dict], typing.Awaitable[dict]]):
-            self.add_event_handler(event, handler)
+            self.logger.debug(f"add handler {handler} for event '{event}'")
+            self.events.append(event)
+            self.m[event] = handler
+
         return wrapper
