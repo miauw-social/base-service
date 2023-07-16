@@ -6,7 +6,7 @@ with open("Readme.md") as f:
 
 setup(
     name="miauw-base-service",
-    version="1.1.2",
+    version="1.2.0",
     author="cheetahbyte",
     author_email="contact@cheetahbyte.dev",
     description="base service & worker class for miauw-social",

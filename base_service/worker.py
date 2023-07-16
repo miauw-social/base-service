@@ -2,7 +2,8 @@ from typing import Callable, Awaitable, Any
 import aio_pika
 import json
 import asyncio
-
+import traceback
+import os
 
 class RabbitMQWorker:
     """RabbitMQ Base Worker Class"""
@@ -49,3 +50,5 @@ class RabbitMQWorker:
                         )
                 except Exception as e:
                     print("[!] Exception: ", e)
+                    if os.getenv("SERVICE_TRACEBACK") == "active":
+                        print(traceback.format_exc())
