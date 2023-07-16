@@ -1,2 +1,2 @@
-from .worker import RabbitMQWorker
-from .service import BaseService
+from .service import BaseService 
+from .exceptions import ProblemJSON
