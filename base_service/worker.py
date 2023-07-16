@@ -36,9 +36,9 @@ class RabbitMQWorker:
                 try:
                     async with message.process(requeue=False):
                         assert message.reply_to is not None
-                        if type(message.body) is dict:
+                        try:
                             data = json.loads(message.body)
-                        else:
+                        except json.JSONDecodeError:
                             data = str(message.body)
                         res = await worker_function(data)
                         await self.ex.publish(
