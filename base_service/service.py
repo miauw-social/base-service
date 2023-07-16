@@ -1,17 +1,21 @@
-from base_service import RabbitMQWorker
+from base_service.email_worker import EmailTemplates, EMailWorker
+from base_service.worker import RabbitMQWorker
 from collections import defaultdict
 import asyncio
 import typing
 import logging
-
+import os
 
 class BaseService:
     """creates the base service class"""
 
     def __init__(
-        self, name: str, url: str, logfile: str = None, worker_log: bool = True
+        self, name: str, url: str | None= os.getenv("RABBITMQ_URL"), logfile: str = None, worker_log: bool = True
     ):
+        if not url:
+            raise Exception("No URL provided and env var 'RABBITMQ_URL' is empty.")
         self.worker = RabbitMQWorker(url)
+        self.emailer = EMailWorker(url)
         self.events: list[str] = []
         self.m: dict[
             str, typing.Callable[[typing.Any], typing.Awaitable[typing.Any]]
