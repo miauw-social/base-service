@@ -2,6 +2,7 @@ from enum import StrEnum
 import json
 import aio_pika
 
+
 class EmailTemplates(StrEnum):
     VERIFY = "sign_up"
 
@@ -21,18 +22,17 @@ class EMailWorker:
         return self
 
     async def send(self, typ: EmailTemplates, recipient: str, subject: str, **context):
+        await self.setup()
         await self.ex.publish(
             aio_pika.Message(
                 json.dumps(
                     {
-                        {
-                            "type": typ,
-                            "recipient": email,
-                            "subject": subject,
-                            "payload": context,
-                        },
-                    }
-                )
+                        "type": typ,
+                        "recipient": recipient,
+                        "subject": subject,
+                        "payload": context,
+                    },
+                ).encode("utf-8")
             ),
             routing_key="email",
         )
