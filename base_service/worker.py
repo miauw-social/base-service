@@ -39,7 +39,7 @@ class RabbitMQWorker:
                         try:
                             data = json.loads(message.body)
                         except json.JSONDecodeError:
-                            data = str(message.body)
+                            data = message.body.decode("utf-8")
                         res = await worker_function(data)
                         await self.ex.publish(
                             aio_pika.Message(
