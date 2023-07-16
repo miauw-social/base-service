@@ -39,7 +39,7 @@ class RabbitMQWorker:
                         if type(message.body) is dict:
                             data = json.loads(message.body)
                         else:
-                            data = str(data)
+                            data = str(message.body)
                         res = await worker_function(data)
                         await self.ex.publish(
                             aio_pika.Message(
