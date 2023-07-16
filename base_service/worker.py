@@ -21,8 +21,12 @@ class RabbitMQWorker:
         self.ex = self.channel.default_exchange
         return self
 
-    async def send_basic(self, queue_name: str, data: bytes) -> None:
+    async def send(self, queue_name: str, data: dict | str | bytes) -> None:
         """sends something to queue"""
+        try:
+            data = json.loads(message.body)
+        except json.JSONDecodeError:
+            data = message.body.decode("utf-8")
         await self.ex.publish(aio_pika.Message(data), routing_key=queue_name)
 
     async def listen(
