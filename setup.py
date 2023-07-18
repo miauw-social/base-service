@@ -3,15 +3,14 @@ from setuptools import setup, find_packages
 with open("Readme.md") as f:
     content = f.read()
 
-
 setup(
     name="miauw-base-service",
-    version="1.9.1",
+    version="1.10.0",
     author="cheetahbyte",
     author_email="contact@cheetahbyte.dev",
     description="base service & worker class for miauw-social",
     long_description=content,
-    long_description_content_type = "text/markdown",
+    long_description_content_type="text/markdown",
     packages=find_packages(),
     py_modules="base_service",
 )

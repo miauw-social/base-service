@@ -2,11 +2,10 @@
 name = "miauw-base-service"
 description = "base service and base worker class for miauw"
 authors = [{name = "cheetahbyte", email = "contact@cheetahbyte.dev"}]
-version = "1.9.1"
+version = "1.10.0"
 requires-python = ">=3.11"
 dependencies = [
     "aio-pika",
-    "psycopg[binary,pool]"
 ]
 
 [project.optional-dependencies]
