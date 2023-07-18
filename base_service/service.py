@@ -1,8 +1,7 @@
-from base_service.email_worker import EmailTemplates, EMailWorker
+from base_service.email_worker import EMailWorker
 from base_service.worker import RabbitMQWorker
-from base_service.utils import get_file_paths, build_prepared_statement
+from base_service.utils import run_async
 from psycopg_pool import AsyncConnectionPool
-from psycopg import AsyncConnection
 import asyncio
 import typing
 import logging
@@ -42,12 +41,14 @@ class BaseService:
         self.log_streamhandler.setFormatter(self.log_formatter)
         self.logger.addHandler(self.log_filehandler)
         self.logger.addHandler(self.log_streamhandler)
+        # run init db
+        if postgres_url:
+            run_async(self.init_db())
 
     def start(self):
         """starts the service"""
         self.logger.info("starting")
         loop = asyncio.get_event_loop()
-
         for ev in self.events:
             self.logger.info(f"listening for event '{ev}'")
         loop.run_until_complete(
@@ -63,30 +64,11 @@ class BaseService:
                       min_size: int = 5,
                       max_size: int = 15):
         """initialises the connection with the database and prepares the statements."""
-        self._pool = AsyncConnectionPool(self.postgres_url, min_size=5, max_size=15)
-        # statements: list[str] = []
-        # if prepare_statements:
-        #     files = get_file_paths(path, walk_sub_dirs=include_sub_dirs)
-        #     for file in files:
-        #         if file in exclude_files:
-        #             continue
-        #         else:
-        #             with open(file) as f:
-        #                 statements.append(build_prepared_statement(file.lstrip(f"{path}"), f.read()))
-        # conn: AsyncConnection
-        # for statement in statements:
-        #     print(statement)
-        # async with self.pool.connection() as conn:
-        #     for statement in statements:
-        #         await conn.execute(statement)
-        #         await conn.commit()
-        #         print("prepared statement", statement)
+        self.__setattr__("_pool", AsyncConnectionPool(self.postgres_url, min_size=5, max_size=15))
 
     @property
     def pool(self):
         """returns the database connection pool of the service"""
-        if not self._pool:
-            raise AttributeError("You need to call BaseService.init_db() first.")
         return self._pool
 
     def event(self, event: str, event_type: str = "rpc"):
