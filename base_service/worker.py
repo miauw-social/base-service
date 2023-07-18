@@ -1,7 +1,6 @@
 from typing import Callable, Awaitable, Any
 import aio_pika
 import json
-import asyncio
 import traceback
 import os
 
@@ -25,9 +24,9 @@ class RabbitMQWorker:
     async def send(self, queue_name: str, data: dict | str | bytes) -> None:
         """sends something to queue"""
         try:
-            data = json.loads(message.body)
+            data = json.dumps(data).encode("utf-8")
         except json.JSONDecodeError:
-            data = message.body.decode("utf-8")
+            data = data.encode("utf-8")
         await self.ex.publish(aio_pika.Message(data), routing_key=queue_name)
 
     async def listen(
@@ -48,7 +47,6 @@ class RabbitMQWorker:
                         except json.JSONDecodeError:
                             data = message.body.decode("utf-8")
                         res = await worker_function(data)
-                        return
                         await self.ex.publish(
                             aio_pika.Message(
                                 body=json.dumps(res).encode("utf-8"),
